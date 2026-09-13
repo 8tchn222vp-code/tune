@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5b4636">
+<title>とび森 美術品コンプ</title>
+<style>
+:root{--bg:#f7f2ea;--card:#fff;--text:#332a24;--muted:#7d7066;--accent:#5b4636;--green:#27845b;--line:#e5ddd4;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}
+header{position:sticky;top:0;z-index:5;background:rgba(91,70,54,.97);color:#fff;padding:14px 16px calc(12px + env(safe-area-inset-top));}
+h1{font-size:21px;margin:0 0 10px} .sub{font-size:12px;opacity:.85}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px} .stat{background:rgba(255,255,255,.13);border-radius:12px;padding:9px;text-align:center} .stat b{font-size:19px;display:block}
+main{max-width:760px;margin:auto;padding:14px 12px 40px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button,.search{border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px 12px;font-size:14px;color:var(--text)}
+button.active{background:var(--accent);color:#fff;border-color:var(--accent)} .search{width:100%;font-size:16px}
+.progress{height:10px;background:#e6ded5;border-radius:99px;overflow:hidden;margin:10px 0 14px} .bar{height:100%;background:var(--green);width:0;transition:.2s}
+.item{background:var(--card);border:1px solid var(--line);border-radius:15px;margin:9px 0;padding:12px;display:grid;grid-template-columns:30px 1fr;gap:9px;box-shadow:0 1px 2px #00000008}
+.item.done{opacity:.62} .item input{width:23px;height:23px;margin-top:2px;accent-color:var(--green)}
+.name{font-weight:700;font-size:16px} .meta{font-size:12px;color:var(--muted);margin-top:3px} .check{font-size:13px;margin-top:7px;line-height:1.45}
+.badge{display:inline-block;font-size:11px;padding:2px 7px;border-radius:99px;background:#edf6f1;color:#21704d;margin-left:5px}
+.section-title{font-weight:800;font-size:18px;margin:18px 2px 8px}
+.empty{text-align:center;color:var(--muted);padding:30px}
+footer{text-align:center;color:var(--muted);font-size:11px;margin-top:25px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎨 とび森 美術品コンプ</h1>
+  <div class="sub">寄贈済みをタップしてチェック。データはこの端末のブラウザに保存されます。</div>
+  <div class="stats">
+    <div class="stat"><b id="total">0</b><span>全美術品</span></div>
+    <div class="stat"><b id="done">0</b><span>寄贈済み</span></div>
+    <div class="stat"><b id="left">0</b><span>あと</span></div>
+  </div>
+</header>
+<main>
+  <input id="search" class="search" placeholder="🔎 名前・作品名・作者で検索">
+  <div class="controls" style="margin-top:10px">
+    <button class="tab active" data-cat="all">全部</button>
+    <button class="tab" data-cat="絵画">🖼️ 絵画</button>
+    <button class="tab" data-cat="彫刻">🗿 彫刻</button>
+    <button id="undone">未寄贈だけ</button>
+    <button id="reset">リセット</button>
+  </div>
+  <div class="progress"><div id="bar" class="bar"></div></div>
+  <div id="list"></div>
+  <footer>とびだせ どうぶつの森（3DS）用 / 全33種類</footer>
+</main>
+<script>
+const DATA={"絵画": [{"name": "あらぶるめいが", "work": "風神雷神図屏風", "author": "俵屋宗達ほか", "check": "本物：緑の風神が右／偽物：緑の風神が左"}, {"name": "いいかんじのめいが", "work": "着衣のマハ", "author": "フランシスコ・デ・ゴヤ", "check": "偽物なし"}, {"name": "いいめいが", "work": "笛を吹く少年", "author": "エドゥアール・マネ", "check": "偽物なし"}, {"name": "いきなめいが", "work": "富嶽三十六景 神奈川沖浪裏", "author": "葛飾北斎", "check": "本物：富士山が小さく遠い／偽物：富士山が大きく近い"}, {"name": "いさましいめいが", "work": "青衣の少年", "author": "トマス・ゲインズボロー", "check": "本物：右手を下ろす／偽物：右手を腰に当てる"}, {"name": "いなせなめいが", "work": "三代目大谷鬼次の江戸兵衛", "author": "東洲斎写楽", "check": "本物：両手がパー／偽物：指差し"}, {"name": "うまいめいが", "work": "果物籠", "author": "カラヴァッジョ", "check": "本物：虫食いが目立たない／偽物：葉などが傷んでいる"}, {"name": "おごそかなめいが", "work": "ラス・メニーナス", "author": "ディエゴ・ベラスケス", "check": "本物：中央の人物と左の人物の身長差が小さい／偽物：中央の人物が大きい"}, {"name": "おだやかなめいが", "work": "グランド・ジャット島の日曜日の午後", "author": "ジョルジュ・スーラ", "check": "偽物なし"}, {"name": "おちついためいが", "work": "牛乳を注ぐ女", "author": "ヨハネス・フェルメール", "check": "本物：白い帽子／偽物：帽子なし"}, {"name": "おもしろいめいが", "work": "夏", "author": "ジュゼッペ・アルチンボルド", "check": "本物：鼻が野菜／偽物：鼻がニンジン"}, {"name": "かちのあるめいが", "work": "民衆を導く自由の女神", "author": "ウジェーヌ・ドラクロワ", "check": "偽物なし"}, {"name": "きれいなめいが", "work": "ヴィーナスの誕生", "author": "サンドロ・ボッティチェリ", "check": "本物：貝の開きが上向き／偽物：逆向き"}, {"name": "しなやかなめいが", "work": "見返り美人図", "author": "菱川師宣", "check": "本物：顔が右向き／偽物：顔も左向き"}, {"name": "すごいめいが", "work": "夜警", "author": "レンブラント・ファン・レイン", "check": "本物：黒い服の隊長が左／偽物：左右逆"}, {"name": "すてきなめいが", "work": "真珠の耳飾りの少女", "author": "ヨハネス・フェルメール", "check": "本物：青いターバン／偽物：赤〜橙色のターバン"}, {"name": "すばらしいめいが", "work": "リンゴとオレンジのある静物", "author": "ポール・セザンヌ", "check": "偽物なし"}, {"name": "たいへんなめいが", "work": "アレアレア", "author": "ポール・ゴーギャン", "check": "偽物なし"}, {"name": "たおやかなめいが", "work": "白貂を抱く貴婦人", "author": "レオナルド・ダ・ヴィンチ", "check": "本物：白貂の尾が上向き／偽物：尾が下向き"}, {"name": "たぐいまれなるめいが", "work": "ひまわり", "author": "フィンセント・ファン・ゴッホ", "check": "偽物なし"}, {"name": "ちからづよいめいが", "work": "種まく人", "author": "ジャン＝フランソワ・ミレー", "check": "偽物なし"}, {"name": "にぎやかなめいが", "work": "フォリー・ベルジェールのバー", "author": "エドゥアール・マネ", "check": "偽物なし"}, {"name": "みごとなめいが", "work": "雪中の狩人", "author": "ピーテル・ブリューゲル", "check": "偽物なし"}, {"name": "ゆうめいなめいが", "work": "モナ・リザ", "author": "レオナルド・ダ・ヴィンチ", "check": "本物：右手が上／偽物：左手が上"}, {"name": "よくみるめいが", "work": "落穂拾い", "author": "ジャン＝フランソワ・ミレー", "check": "偽物なし"}], "彫刻": [{"name": "いだいなちょうこく", "work": "カメハメハ大王像", "author": "トーマス・R・グールド", "check": "本物：右手の平が上／偽物：手の甲が上"}, {"name": "いにしえのちょうこく", "work": "遮光器土偶", "author": "縄文時代", "check": "本物：目がほぼ閉じている／偽物：黒目が見える"}, {"name": "うつくしいちょうこく", "work": "ミロのヴィーナス", "author": "アレクサンドロス？", "check": "本物：髪を後ろでまとめる／偽物：長い髪を下ろす"}, {"name": "こうごうしいちょうこく", "work": "サモトラケのニケ", "author": "古代ギリシャ", "check": "本物：羽毛のある翼／偽物：コウモリのような翼"}, {"name": "しんぴてきなちょうこく", "work": "ネフェルティティの胸像", "author": "古代エジプト", "check": "本物：細長い筒型の帽子／偽物：丸い帽子"}, {"name": "たくましいちょうこく", "work": "円盤投げ", "author": "ミュロン", "check": "本物：円盤／偽物：UFOのような円盤"}, {"name": "ぼせいあふれるちょうこく", "work": "カピトリーノの雌狼", "author": "古代ローマ", "check": "本物：子どもが2人／偽物：子どもが1人"}, {"name": "りりしいちょうこく", "work": "ダビデ像", "author": "ミケランジェロ", "check": "本物：肩に布／偽物：首に布"}]};
+const all=[...DATA.絵画.map(x=>({...x,cat:"絵画"})),...DATA.彫刻.map(x=>({...x,cat:"彫刻"}))];
+const key=x=>"art_"+x.cat+"_"+x.name;
+let cat="all", onlyUndone=false;
+const saved=JSON.parse(localStorage.getItem("tobimori_art_checked")||"{}");
+
+function updateStats(){
+ const done=all.filter(x=>saved[key(x)]).length;
+ document.getElementById("total").textContent=all.length;
+ document.getElementById("done").textContent=done;
+ document.getElementById("left").textContent=all.length-done;
+ document.getElementById("bar").style.width=(done/all.length*100)+"%";
+}
+function render(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ const list=document.getElementById("list");
+ const filtered=all.filter(x=>
+   (cat==="all"||x.cat===cat) &&
+   (!onlyUndone||!saved[key(x)]) &&
+   (!q||[x.name,x.work,x.author,x.check].join(" ").toLowerCase().includes(q))
+ );
+ if(!filtered.length){list.innerHTML='<div class="empty">該当する美術品はないよ。</div>';return;}
+ let last="";
+ list.innerHTML="";
+ filtered.forEach(x=>{
+   if(x.cat!==last){const t=document.createElement("div");t.className="section-title";t.textContent=(x.cat==="絵画"?"🖼️ 絵画":"🗿 彫刻");list.appendChild(t);last=x.cat;}
+   const el=document.createElement("label");el.className="item"+(saved[key(x)]?" done":"");
+   el.innerHTML=`<input type="checkbox" ${saved[key(x)]?"checked":""}><div>
+     <div class="name">${x.name} <span class="badge">${x.cat}</span></div>
+     <div class="meta">『${x.work}』／${x.author}</div>
+     <div class="check">🔍 ${x.check}</div>
+   </div>`;
+   el.querySelector("input").addEventListener("change",e=>{
+     saved[key(x)]=e.target.checked;
+     localStorage.setItem("tobimori_art_checked",JSON.stringify(saved));
+     updateStats(); render();
+   });
+   list.appendChild(el);
+ });
+}
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");cat=b.dataset.cat;render();
+}));
+document.getElementById("search").addEventListener("input",render);
+document.getElementById("undone").addEventListener("click",e=>{onlyUndone=!onlyUndone;e.target.classList.toggle("active",onlyUndone);render();});
+document.getElementById("reset").addEventListener("click",()=>{
+ if(confirm("寄贈チェックを全部リセットする？")){localStorage.removeItem("tobimori_art_checked");location.reload();}
+});
+updateStats();render();
+</script>
+</body>
+</html>
